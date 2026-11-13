@@ -1,0 +1,11 @@
+# 大体积行情与成交数据、压缩包
+*.csv
+*.parquet
+*.feather
+*.zip
+data/
+
+# 本地环境
+__pycache__/
+.venv/
+.DS_Store

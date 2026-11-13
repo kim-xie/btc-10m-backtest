@@ -1,0 +1,432 @@
+{
+ "meta": {
+  "rule": "combo_vol_spike_fade_AND_fade_atr15_highvol",
+  "locked_at": "2026-11-11 17:04 Asia/Shanghai",
+  "m_locked_at": "2026-11-11 17:26 Asia/Shanghai",
+  "data_1m": "/workspace/btc-10m-combo-vol-highvol/data/klines_btcusdt_1m.csv",
+  "data_5m": "/workspace/btc-10m-combo-vol-highvol/data/klines_btcusdt_5m.csv",
+  "rows_1m": 1522465,
+  "rows_5m": 304493,
+  "first_1m": "2021-12-20 00:00:00+00:00",
+  "last_1m": "2024-11-11 07:44:00+00:00",
+  "first_5m": "2021-12-20 00:00:00+00:00",
+  "last_5m": "2024-11-11 07:40:00+00:00",
+  "signal_window": "[2022-01-01 00:00:00 UTC, 2024-11-11 07:35:00 UTC)",
+  "signal_time_is": "5m close instant (entry = that close)",
+  "last_possible_signal_close": "2024-11-11 07:30:00 UTC",
+  "payoff": {
+   "win": 0.8,
+   "loss": -1.0,
+   "tie_policy": "exit==entry (or slipped entry) counts as loss -1"
+  },
+  "breakeven": 0.5555555555555556,
+  "z95": 1.9599639845400536,
+  "z_bonf_m31": 3.1535631591215103,
+  "z_bonf_m25": 3.090232306167813,
+  "bonferroni": {
+   "formula": "m = 25 + n_flow; official n_flow=6 so m=31",
+   "n_flow": 6,
+   "m_official": 31,
+   "m_sensitivity": 25,
+   "confidence_level_official": 0.9983870967741936,
+   "note": "m=25 (n_flow unknown) kept as a sensitivity column only; verdict uses m=31"
+  },
+  "role_counts_5m": {
+   "signal_window": 301035,
+   "warmup": 3455,
+   "settlement_only": 3
+  },
+  "fetch_log": {
+   "source_url": "https://api.binance.com/api/v3/klines",
+   "fallback_url": "https://data-api.binance.vision/api/v3/klines",
+   "hosts_used": [
+    "https://api.binance.com"
+   ],
+   "symbol": "BTCUSDT",
+   "interval": "1m",
+   "params": {
+    "startTime": 1639958400000,
+    "start_utc": "2021-12-20 00:00:00 UTC",
+    "last_1m_open_ms": 1731311040000,
+    "last_1m_open_utc": "2024-11-11 07:44:00 UTC",
+    "limit": 1000
+   },
+   "pages": 1480,
+   "workers": 8,
+   "elapsed_sec": 412.6,
+   "rows_1m": 1522465,
+   "first_1m_open_utc": "2021-12-20 00:00:00+00:00",
+   "last_1m_open_utc": "2024-11-11 07:44:00+00:00",
+   "settlement_only_1m": 10,
+   "gaps_1m_bars": 80,
+   "gaps_1m_runs": [
+    {
+     "start_open_ms": 1679661600000,
+     "end_open_ms": 1679666340000,
+     "start_utc": "2023-03-24 12:40:00 UTC",
+     "end_utc": "2023-03-24 13:59:00 UTC",
+     "bars": 80
+    }
+   ],
+   "rows_5m_valid": 304493,
+   "first_5m_open_utc": "2021-12-20 00:00:00+00:00",
+   "last_5m_open_utc": "2024-11-11 07:40:00+00:00",
+   "role_counts": {
+    "signal_window": 301035,
+    "warmup": 3455,
+    "settlement_only": 3
+   },
+   "gaps_5m_interior_runs": [
+    {
+     "start_open_ms": 1679661600000,
+     "end_open_ms": 1679666100000,
+     "start_utc": "2023-03-24 12:40:00 UTC",
+     "end_utc": "2023-03-24 13:55:00 UTC",
+     "bars": 16
+    }
+   ],
+   "gaps_5m_interior_bars": 16,
+   "grid_5m": {
+    "grid_first_open_ms": 1639958400000,
+    "grid_last_open_ms": 1731310800000,
+    "grid_slots": 304509,
+    "valid_5m": 304493,
+    "missing_or_incomplete_5m": 16,
+    "missing_5m_opens_utc": [
+     "2023-03-24 12:40:00 UTC",
+     "2023-03-24 12:45:00 UTC",
+     "2023-03-24 12:50:00 UTC",
+     "2023-03-24 12:55:00 UTC",
+     "2023-03-24 13:00:00 UTC",
+     "2023-03-24 13:05:00 UTC",
+     "2023-03-24 13:10:00 UTC",
+     "2023-03-24 13:15:00 UTC",
+     "2023-03-24 13:20:00 UTC",
+     "2023-03-24 13:25:00 UTC",
+     "2023-03-24 13:30:00 UTC",
+     "2023-03-24 13:35:00 UTC",
+     "2023-03-24 13:40:00 UTC",
+     "2023-03-24 13:45:00 UTC",
+     "2023-03-24 13:50:00 UTC",
+     "2023-03-24 13:55:00 UTC"
+    ],
+    "missing_5m_opens_utc_truncated": false
+   },
+   "signal_window": "close in [2022-01-01 00:00:00 UTC, 2024-11-11 07:35:00 UTC)",
+   "settlement_only_note": "1m/5m bars with open_time >= 2024-11-11 07:35:00 UTC are settlement-only; no signals at close 07:35 or later. Last possible signal close is 07:30; its exit is the 07:40 close. The 07:45 1m close is fetched only as a buffer.",
+   "raw_csv": "/workspace/btc-10m-combo-vol-highvol/data/klines_btcusdt_1m.csv",
+   "agg_csv": "/workspace/btc-10m-combo-vol-highvol/data/klines_btcusdt_5m.csv"
+  },
+  "condition1_bars_with_full_5day_hist": 302973,
+  "condition1_triggers": 29545,
+  "condition2_triggers": 6693,
+  "and_agree_in_window_before_exit_filter": null,
+  "and_agree_in_signal_window": 3462,
+  "s1_in_signal_window": 29398,
+  "s2_in_signal_window": 6636
+ },
+ "verdict": {
+  "status": "FAIL",
+  "N_ge_200": true,
+  "exp_1bp_positive": false,
+  "unadj_wilson95_lo_gt_be": false,
+  "bonf_m31_lo_gt_be": false,
+  "already_rejected_regardless_of_m": true,
+  "official_m": 31,
+  "breakeven": 0.5555555555555556
+ },
+ "metrics": {
+  "0": {
+   "all": {
+    "N": 3462,
+    "W": 1921,
+    "L": 1541,
+    "win_rate": 0.5548815713460428,
+    "wilson95_lo": 0.5382750619747564,
+    "wilson95_hi": 0.5713664217788891,
+    "bonf_m31_lo": 0.5281256557582149,
+    "bonf_m31_hi": 0.5813230838711391,
+    "bonf_m25_lo": 0.528664586555921,
+    "bonf_m25_hi": 0.5807966197704095,
+    "exp_R": -0.0012131715771230593,
+    "total_R": -4.200000000000031,
+    "max_dd_R": -55.19999999999997,
+    "min_running_sum_R": -33.1999999999996,
+    "max_loss_streak": 9
+   },
+   "nonoverlap": {
+    "N": 3109,
+    "W": 1734,
+    "L": 1375,
+    "win_rate": 0.5577356063042779,
+    "wilson95_lo": 0.5402170503479639,
+    "wilson95_hi": 0.5751116629029859,
+    "bonf_m31_lo": 0.5295060757539014,
+    "bonf_m31_hi": 0.585596949318751,
+    "bonf_m25_lo": 0.5300748716715604,
+    "bonf_m25_hi": 0.5850427481993445,
+    "exp_R": 0.003924091347700216,
+    "total_R": 12.19999999999997,
+    "max_dd_R": -44.79999999999984,
+    "min_running_sum_R": -35.99999999999972,
+    "max_loss_streak": 8
+   }
+  },
+  "1": {
+   "all": {
+    "N": 3462,
+    "W": 1878,
+    "L": 1584,
+    "win_rate": 0.5424610051993067,
+    "wilson95_lo": 0.5258278602469387,
+    "wilson95_hi": 0.5590000245519343,
+    "bonf_m31_lo": 0.515675831864993,
+    "bonf_m31_hi": 0.569002929848244,
+    "bonf_m25_lo": 0.5162146431027668,
+    "bonf_m25_hi": 0.5684737638970783,
+    "exp_R": -0.023570190641247848,
+    "total_R": -81.60000000000005,
+    "max_dd_R": -88.40000000000163,
+    "min_running_sum_R": -84.40000000000146,
+    "max_loss_streak": 9
+   },
+   "nonoverlap": {
+    "N": 3109,
+    "W": 1695,
+    "L": 1414,
+    "win_rate": 0.5451913798649083,
+    "wilson95_lo": 0.5276427582430041,
+    "wilson95_hi": 0.562628462992419,
+    "bonf_m31_lo": 0.5169287799563036,
+    "bonf_m31_hi": 0.5731657884153267,
+    "bonf_m25_lo": 0.5174974440624974,
+    "bonf_m25_hi": 0.5726085480927233,
+    "exp_R": -0.01865551624316501,
+    "total_R": -58.000000000000014,
+    "max_dd_R": -60.40000000000041,
+    "min_running_sum_R": -60.40000000000041,
+    "max_loss_streak": 8
+   }
+  },
+  "2": {
+   "all": {
+    "N": 3462,
+    "W": 1842,
+    "L": 1620,
+    "win_rate": 0.5320623916811091,
+    "wilson95_lo": 0.515414928182838,
+    "wilson95_hi": 0.5486387807469233,
+    "bonf_m31_lo": 0.5052655307550247,
+    "bonf_m31_hi": 0.5586755750284398,
+    "bonf_m25_lo": 0.5058039868571101,
+    "bonf_m25_hi": 0.5581444021019565,
+    "exp_R": -0.042287694974003476,
+    "total_R": -146.40000000000003,
+    "max_dd_R": -148.60000000000082,
+    "min_running_sum_R": -148.60000000000082,
+    "max_loss_streak": 9
+   },
+   "nonoverlap": {
+    "N": 3109,
+    "W": 1663,
+    "L": 1446,
+    "win_rate": 0.5348986812479897,
+    "wilson95_lo": 0.5173337440118424,
+    "wilson95_hi": 0.5523774837749433,
+    "bonf_m31_lo": 0.5066223486759325,
+    "bonf_m31_hi": 0.5629524603512697,
+    "bonf_m25_lo": 0.5071906380218056,
+    "bonf_m25_hi": 0.5623929929308025,
+    "exp_R": -0.03718237375361854,
+    "total_R": -115.60000000000004,
+    "max_dd_R": -117.00000000000348,
+    "min_running_sum_R": -117.00000000000348,
+    "max_loss_streak": 8
+   }
+  }
+ },
+ "appendix_0bp": {
+  "side": {
+   "long": {
+    "N": 1737,
+    "W": 986,
+    "L": 751,
+    "win_rate": 0.5676453655728267,
+    "wilson95_lo": 0.5442239707403904,
+    "wilson95_hi": 0.5907682187029821,
+    "bonf_m31_lo": 0.5298799075210368,
+    "bonf_m31_hi": 0.6046406442423573,
+    "bonf_m25_lo": 0.5306417504267075,
+    "bonf_m25_hi": 0.6039092572577073,
+    "exp_R": 0.02176165803108807,
+    "total_R": 37.799999999999976,
+    "max_dd_R": -62.00000000000003,
+    "min_running_sum_R": -62.00000000000003,
+    "max_loss_streak": 7
+   },
+   "short": {
+    "N": 1725,
+    "W": 935,
+    "L": 790,
+    "win_rate": 0.5420289855072464,
+    "wilson95_lo": 0.5184498608327803,
+    "wilson95_hi": 0.5654213346780619,
+    "bonf_m31_lo": 0.5040658015716546,
+    "bonf_m31_hi": 0.5795103367457097,
+    "bonf_m25_lo": 0.5048286951334925,
+    "bonf_m25_hi": 0.5787664960185289,
+    "exp_R": -0.02434782608695653,
+    "total_R": -42.000000000000014,
+    "max_dd_R": -88.80000000000041,
+    "min_running_sum_R": -42.80000000000062,
+    "max_loss_streak": 8
+   }
+  },
+  "session_utc": {
+   "Asia 00-08": {
+    "N": 790,
+    "W": 397,
+    "L": 393,
+    "win_rate": 0.5025316455696203,
+    "wilson95_lo": 0.46773810622324646,
+    "wilson95_hi": 0.5373006832674692,
+    "bonf_m31_lo": 0.44675131258863926,
+    "bonf_m31_hi": 0.558249031431288,
+    "bonf_m25_lo": 0.44785860859450416,
+    "bonf_m25_hi": 0.5571442083935234,
+    "exp_R": -0.09544303797468355,
+    "total_R": -75.4,
+    "max_dd_R": -76.00000000000064,
+    "min_running_sum_R": -76.00000000000064,
+    "max_loss_streak": 9
+   },
+   "Europe 08-16": {
+    "N": 1317,
+    "W": 754,
+    "L": 563,
+    "win_rate": 0.5725132877752468,
+    "wilson95_lo": 0.5456221127788621,
+    "wilson95_hi": 0.5989826758764951,
+    "bonf_m31_lo": 0.529138243533103,
+    "bonf_m31_hi": 0.6148014115930917,
+    "bonf_m25_lo": 0.5300137324219135,
+    "bonf_m25_hi": 0.6139688289969757,
+    "exp_R": 0.030523917995444187,
+    "total_R": 40.199999999999996,
+    "max_dd_R": -41.600000000000485,
+    "min_running_sum_R": -8.800000000000002,
+    "max_loss_streak": 7
+   },
+   "US 16-24": {
+    "N": 1355,
+    "W": 770,
+    "L": 585,
+    "win_rate": 0.5682656826568265,
+    "wilson95_lo": 0.5417361161244756,
+    "wilson95_hi": 0.5944092736110989,
+    "bonf_m31_lo": 0.5254860576436329,
+    "bonf_m31_hi": 0.6100505429815468,
+    "bonf_m25_lo": 0.5263489315051525,
+    "bonf_m25_hi": 0.6092269454851044,
+    "exp_R": 0.02287822878228781,
+    "total_R": 30.999999999999986,
+    "max_dd_R": -27.800000000000004,
+    "min_running_sum_R": -15.99999999999999,
+    "max_loss_streak": 7
+   }
+  }
+ },
+ "appendix_1bp": {
+  "side": {
+   "long": {
+    "N": 1737,
+    "W": 973,
+    "L": 764,
+    "win_rate": 0.560161197466897,
+    "wilson95_lo": 0.5367111126903444,
+    "wilson95_hi": 0.5833457706869528,
+    "bonf_m31_lo": 0.5223659935958674,
+    "bonf_m31_hi": 0.5972714332915766,
+    "bonf_m25_lo": 0.52312758047947,
+    "bonf_m25_hi": 0.5965369327377328,
+    "exp_R": 0.008290155440414499,
+    "total_R": 14.399999999999984,
+    "max_dd_R": -69.20000000000007,
+    "min_running_sum_R": -69.20000000000007,
+    "max_loss_streak": 7
+   },
+   "short": {
+    "N": 1725,
+    "W": 905,
+    "L": 820,
+    "win_rate": 0.5246376811594203,
+    "wilson95_lo": 0.5010425388204799,
+    "wilson95_hi": 0.5481233344100139,
+    "bonf_m31_lo": 0.48668670235858463,
+    "bonf_m31_hi": 0.5623062063102152,
+    "bonf_m25_lo": 0.487447381480831,
+    "bonf_m25_hi": 0.5615566960910437,
+    "exp_R": -0.05565217391304349,
+    "total_R": -96.00000000000001,
+    "max_dd_R": -135.0000000000005,
+    "min_running_sum_R": -96.80000000000051,
+    "max_loss_streak": 8
+   }
+  },
+  "session_utc": {
+   "Asia 00-08": {
+    "N": 790,
+    "W": 390,
+    "L": 400,
+    "win_rate": 0.4936708860759494,
+    "wilson95_lo": 0.45892255409839666,
+    "wilson95_hi": 0.5284804721748146,
+    "bonf_m31_lo": 0.4380044158548822,
+    "bonf_m31_hi": 0.5494947240952996,
+    "bonf_m25_lo": 0.43910731244949514,
+    "bonf_m25_hi": 0.5483856450804359,
+    "exp_R": -0.11139240506329114,
+    "total_R": -88.0,
+    "max_dd_R": -88.60000000000075,
+    "min_running_sum_R": -88.60000000000075,
+    "max_loss_streak": 9
+   },
+   "Europe 08-16": {
+    "N": 1317,
+    "W": 738,
+    "L": 579,
+    "win_rate": 0.5603644646924829,
+    "wilson95_lo": 0.533421036691942,
+    "wilson95_hi": 0.5869567716651353,
+    "bonf_m31_lo": 0.5169405234570669,
+    "bonf_m31_hi": 0.6028835873547916,
+    "bonf_m25_lo": 0.5178151668893424,
+    "bonf_m25_hi": 0.602044661726382,
+    "exp_R": 0.008656036446469244,
+    "total_R": 11.399999999999995,
+    "max_dd_R": -47.00000000000004,
+    "min_running_sum_R": -10.19999999999997,
+    "max_loss_streak": 7
+   },
+   "US 16-24": {
+    "N": 1355,
+    "W": 750,
+    "L": 605,
+    "win_rate": 0.5535055350553506,
+    "wilson95_lo": 0.5269216775496578,
+    "wilson95_hi": 0.5797868711620088,
+    "bonf_m31_lo": 0.5106800003448113,
+    "bonf_m31_hi": 0.5955513893343838,
+    "bonf_m25_lo": 0.5115416440831879,
+    "bonf_m25_hi": 0.5947205297740406,
+    "exp_R": -0.003690036900369011,
+    "total_R": -5.00000000000001,
+    "max_dd_R": -34.39999999999992,
+    "min_running_sum_R": -22.39999999999987,
+    "max_loss_streak": 7
+   }
+  }
+ },
+ "lookahead": "\u622a\u65ad\u5230 2023-01-01T00:00:00Z \u91cd\u8dd1\uff1a\u5168\u91cf\u7248\u4e2d\u4fe1\u53f7\u6536\u76d8\u65e9\u4e8e\u5207\u70b9\u4e14\u7ed3\u7b97\u6839\u5728\u622a\u65ad\u6587\u4ef6\u5185\u7684 1058 \u7b14\uff0c\u4e0e\u622a\u65ad\u91cd\u8dd1\u7684 1058 \u7b14\u5b8c\u5168\u4e00\u81f4\u3002 \u622a\u65ad\u5230 2023-07-01T00:00:00Z \u91cd\u8dd1\uff1a\u5168\u91cf\u7248\u4e2d\u4fe1\u53f7\u6536\u76d8\u65e9\u4e8e\u5207\u70b9\u4e14\u7ed3\u7b97\u6839\u5728\u622a\u65ad\u6587\u4ef6\u5185\u7684 1689 \u7b14\uff0c\u4e0e\u622a\u65ad\u91cd\u8dd1\u7684 1689 \u7b14\u5b8c\u5168\u4e00\u81f4\u3002 \u622a\u65ad\u5230 2024-01-01T00:00:00Z \u91cd\u8dd1\uff1a\u5168\u91cf\u7248\u4e2d\u4fe1\u53f7\u6536\u76d8\u65e9\u4e8e\u5207\u70b9\u4e14\u7ed3\u7b97\u6839\u5728\u622a\u65ad\u6587\u4ef6\u5185\u7684 2382 \u7b14\uff0c\u4e0e\u622a\u65ad\u91cd\u8dd1\u7684 2382 \u7b14\u5b8c\u5168\u4e00\u81f4\u3002 \u7ed3\u8bba\uff1a\u65e0\u524d\u89c6\u68c0\u67e5\u901a\u8fc7\u3002",
+ "lookahead_pass": true
+}

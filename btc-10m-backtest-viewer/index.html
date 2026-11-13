@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>BTC 10 分钟策略回测</title>
+<style>
+  :root {
+    --bg: #0e1116;
+    --bg2: #161b22;
+    --bg3: #1c2330;
+    --line: #2a3340;
+    --text: #e6edf3;
+    --muted: #8b9bb0;
+    --dim: #6a7686;
+    --up: #ef4444;
+    --down: #22c55e;
+    --accent: #5b9fd6;
+    --warn: #e6b84d;
+    --fail: #f07178;
+    --watch: #e6b84d;
+    --win: #ef4444;
+    --loss: #22c55e;
+    --long: #ef4444;
+    --short: #22c55e;
+    --ema: #e6b84d;
+    --entry: #5b9fd6;
+    --exitm: #c084fc;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--bg); color: var(--text); font: 14px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Noto Sans SC", sans-serif; }
+  #boot { display: flex; height: 100%; align-items: center; justify-content: center; color: var(--muted); }
+  #app { display: none; height: 100%; grid-template-columns: 300px 1fr; }
+  #app.on { display: grid; }
+  aside { background: var(--bg2); border-right: 1px solid var(--line); display: flex; flex-direction: column; min-height: 0; }
+  .aside-h { padding: 16px 16px 10px; border-bottom: 1px solid var(--line); }
+  .aside-h h1 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .aside-h p { margin: 0; color: var(--muted); font-size: 12px; }
+  #filter { margin: 10px 12px 8px; width: calc(100% - 24px); background: var(--bg3); border: 1px solid var(--line); color: var(--text); border-radius: 6px; padding: 7px 10px; }
+  #slist { overflow: auto; flex: 1; padding: 0 0 16px; }
+  .ghead { position: sticky; top: 0; background: var(--bg2); color: var(--dim); font-size: 11px; letter-spacing: .04em; padding: 10px 14px 4px; text-transform: none; }
+  .si { display: block; width: 100%; text-align: left; background: transparent; border: 0; color: var(--text); padding: 8px 14px; cursor: pointer; border-left: 3px solid transparent; }
+  .si:hover { background: var(--bg3); }
+  .si.on { background: var(--bg3); border-left-color: var(--accent); }
+  .si .n { font-size: 13px; }
+  .si .m { display: flex; justify-content: space-between; gap: 8px; font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .st { font-size: 10px; padding: 0 5px; border-radius: 3px; }
+  .st.FAIL { color: var(--fail); }
+  .st.WATCH { color: var(--watch); }
+  .st.PASS { color: #4ade80; }
+  main { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+  .top { padding: 14px 20px 8px; }
+  .top h2 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  .top .desc { color: var(--muted); font-size: 13px; margin: 0 0 8px; max-width: 90ch; }
+  .kpis { display: flex; flex-wrap: wrap; gap: 16px 24px; }
+  .kpi b { display: block; font-size: 18px; font-variant-numeric: tabular-nums; }
+  .kpi span { color: var(--muted); font-size: 11px; }
+  .kpi b.bad { color: var(--fail); }
+  .charts { display: grid; grid-template-rows: 140px 1fr; flex: 1; min-height: 0; padding: 0 16px; gap: 8px; }
+  .card { background: var(--bg2); border: 1px solid var(--line); border-radius: 10px; position: relative; min-height: 0; }
+  .card .lab { position: absolute; left: 12px; top: 8px; font-size: 11px; color: var(--muted); z-index: 2; }
+  canvas { width: 100%; height: 100%; display: block; }
+  .ctrl { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px 20px 12px; }
+  button, select { background: var(--bg3); color: var(--text); border: 1px solid var(--line); border-radius: 6px; padding: 6px 12px; cursor: pointer; font: inherit; }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); border-color: var(--accent); color: #0e1116; font-weight: 600; }
+  button:disabled { opacity: .4; cursor: default; }
+  .tag { font-size: 12px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line); }
+  .tag.long { color: var(--long); border-color: var(--long); }
+  .tag.short { color: var(--short); border-color: var(--short); }
+  .tag.W { color: var(--up); }
+  .tag.L { color: var(--down); }
+  .tag.T { color: var(--muted); }
+  .meta { color: var(--muted); font-variant-numeric: tabular-nums; font-size: 13px; }
+  .note { color: var(--dim); font-size: 12px; padding: 0 20px 10px; }
+  #err { color: var(--fail); padding: 40px; }
+  @media (max-width: 800px) {
+    #app.on { grid-template-columns: 1fr; grid-template-rows: 40vh 1fr; }
+    aside { border-right: 0; border-bottom: 1px solid var(--line); }
+  }
+</style>
+</head>
+<body>
+<div id="boot">正在加载回测数据…</div>
+<div id="err" hidden></div>
+<div id="app">
+  <aside>
+    <div class="aside-h">
+      <h1>BTC 10 分钟回测</h1>
+      <p>币安现货 BTCUSDT 5 分钟 K 线 · 赢 +0.8 / 输 −1 · 保本 55.56%</p>
+    </div>
+    <input id="filter" placeholder="筛选策略" />
+    <div id="slist"></div>
+  </aside>
+  <main>
+    <div class="top">
+      <h2 id="title">选择左侧策略</h2>
+      <p class="desc" id="desc"></p>
+      <div class="kpis" id="kpis"></div>
+    </div>
+    <div class="charts">
+      <div class="card"><div class="lab">权益曲线（每笔 +0.8 / −1，按时间）</div><canvas id="eq"></canvas></div>
+      <div class="card"><div class="lab" id="clab">K 线（北京时间，红涨绿跌）</div><canvas id="k"></canvas></div>
+    </div>
+    <div class="ctrl">
+      <button id="prev">上一笔</button>
+      <button id="play" class="primary">播放</button>
+      <button id="next">下一笔</button>
+      <select id="speed" title="播放速度">
+        <option value="800">慢</option>
+        <option value="400" selected>中</option>
+        <option value="150">快</option>
+      </select>
+      <select id="fdir">
+        <option value="all">全部方向</option>
+        <option value="1">只看多</option>
+        <option value="-1">只看空</option>
+      </select>
+      <select id="fres">
+        <option value="all">全部对错</option>
+        <option value="1">只看赢</option>
+        <option value="-1">只看输</option>
+      </select>
+      <select id="fsam">
+        <option value="all">全部样本</option>
+        <option value="oos">样本外 / 主样本</option>
+        <option value="is">样本内</option>
+      </select>
+      <label class="meta"><input type="checkbox" id="nonov" /> 仅非重叠</label>
+      <span id="pos" class="meta"></span>
+      <span id="tags"></span>
+      <span id="info" class="meta"></span>
+    </div>
+    <div class="note" id="note">左右方向键可翻笔，空格播放或暂停。图中蓝线是入场（信号 K 线收盘），紫线是 10 分钟后结算，黄线是 EMA50。</div>
+  </main>
+</div>
+<script src="data.js"></script>
+<script>
+(function () {
+  const boot = document.getElementById("boot");
+  const err = document.getElementById("err");
+  function fail(m) { boot.hidden = true; err.hidden = false; err.textContent = m; }
+
+  async function gunzip(bytes) {
+    if (typeof DecompressionStream === "function") {
+      const stream = new Blob([bytes]).stream().pipeThrough(new DecompressionStream("gzip"));
+      return new Uint8Array(await new Response(stream).arrayBuffer());
+    }
+    throw new Error("当前浏览器不支持解压，请用最新版 Chrome、Edge 或 Safari 打开。");
+  }
+  function b64ToBytes(s) {
+    const bin = atob(s);
+    const u = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) u[i] = bin.charCodeAt(i);
+    return u;
+  }
+  function u32(v, i) { return v[i] | (v[i+1]<<8) | (v[i+2]<<16) | (v[i+3]<<24); }
+  function i32(v, i) { return u32(v, i) | 0; }
+
+  async function load() {
+    if (!window.__BT_GZ__) throw new Error("找不到 data.js，请把 index.html 和 data.js 放在同一文件夹后，直接用浏览器打开 index.html。");
+    const raw = await gunzip(b64ToBytes(window.__BT_GZ__));
+    const td = new TextDecoder();
+    if (td.decode(raw.slice(0, 4)) !== "BT10") throw new Error("数据格式不对。");
+    const jlen = u32(raw, 4);
+    const meta = JSON.parse(td.decode(raw.slice(8, 8 + jlen)));
+    let p = 8 + jlen;
+    if (p % 4) p += 4 - (p % 4);
+    const nbar = u32(raw, p); p += 4;
+    const times = new Uint32Array(raw.buffer, raw.byteOffset + p, nbar); p += nbar * 4;
+    const open = new Float32Array(raw.buffer, raw.byteOffset + p, nbar); p += nbar * 4;
+    const high = new Float32Array(raw.buffer, raw.byteOffset + p, nbar); p += nbar * 4;
+    const low  = new Float32Array(raw.buffer, raw.byteOffset + p, nbar); p += nbar * 4;
+    const close= new Float32Array(raw.buffer, raw.byteOffset + p, nbar); p += nbar * 4;
+    const ntr = u32(raw, p); p += 4;
+    const recSize = 20;
+    if (p + ntr * recSize > raw.byteLength) throw new Error("交易数据长度不完整。");
+    const trades = [];
+    const dv = new DataView(raw.buffer, raw.byteOffset, raw.byteLength);
+    for (let i = 0; i < ntr; i++) {
+      const o = p + i * recSize;
+      trades.push({
+        kidx: dv.getUint32(o, true),
+        tsec: dv.getUint32(o+4, true),
+        entry: dv.getFloat32(o+8, true),
+        exit: dv.getFloat32(o+12, true),
+        sid: dv.getInt8(o+16),
+        dir: dv.getInt8(o+17),
+        result: dv.getInt8(o+18),
+        flags: dv.getUint8(o+19),
+      });
+    }
+    // EMA50
+    const ema = new Float32Array(nbar);
+    const a = 2 / 51;
+    let e = close[0];
+    for (let i = 0; i < nbar; i++) { e = a * close[i] + (1 - a) * e; ema[i] = e; }
+    return { meta, nbar, times, open, high, low, close, ema, trades };
+  }
+
+  const shanghai = (sec) => {
+    const d = new Date((sec + 8 * 3600) * 1000);
+    const p = (n) => String(n).padStart(2, "0");
+    return `${d.getUTCFullYear()}-${p(d.getUTCMonth()+1)}-${p(d.getUTCDate())} ${p(d.getUTCHours())}:${p(d.getUTCMinutes())}`;
+  };
+  const pct = (x) => x == null || Number.isNaN(x) ? "—" : (x * 100).toFixed(2) + "%";
+  const num = (x) => x == null || Number.isNaN(x) ? "—" : (x >= 0 ? "+" : "") + x.toFixed(3);
+
+  let D, sid = 0, list = [], idx = 0, timer = null;
+  const css = (n) => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+
+  function tradesOf(id) {
+    return D.trades.filter((t) => t.sid === id);
+  }
+  function applyFilter() {
+    const dir = document.getElementById("fdir").value;
+    const res = document.getElementById("fres").value;
+    const sam = document.getElementById("fsam").value;
+    const nov = document.getElementById("nonov").checked;
+    list = tradesOf(sid).filter((t) => {
+      if (dir !== "all" && t.dir !== +dir) return false;
+      if (res !== "all" && t.result !== +res) return false;
+      if (sam === "oos" && !(t.flags & 1) && !(t.flags & 4)) return false;
+      if (sam === "is" && ((t.flags & 1) || (t.flags & 4))) return false;
+      if (nov && !(t.flags & 2)) return false;
+      return true;
+    });
+    if (idx >= list.length) idx = Math.max(0, list.length - 1);
+    renderTrade();
+    drawEquity();
+  }
+
+  function kpiHtml(s, all) {
+    const dec = all.filter((t) => t.result !== 0);
+    const w = dec.filter((t) => t.result === 1).length;
+    const wr = dec.length ? w / dec.length : null;
+    const ev = all.length ? (0.8 * all.filter(t=>t.result===1).length - all.filter(t=>t.result===-1).length) / all.length : null;
+    const oos = all.filter((t) => (t.flags & 1) && t.result !== 0);
+    const owr = oos.length ? oos.filter(t=>t.result===1).length / oos.length : null;
+    const items = [
+      ["判定", s.status || "—"],
+      ["全部笔数", String(all.length)],
+      ["胜率", pct(wr)],
+      ["期望 R", num(ev)],
+      ["样本外笔数", String(oos.length)],
+      ["样本外胜率", pct(owr)],
+    ];
+    return items.map(([k,v]) => `<div class="kpi"><b class="${(k.includes("胜率")||k==="期望 R") && ev!=null && ev<=0 ? "bad":""}">${v}</b><span>${k}</span></div>`).join("");
+  }
+
+  function select(id) {
+    sid = id;
+    idx = 0;
+    document.querySelectorAll(".si").forEach((el) => el.classList.toggle("on", +el.dataset.id === id));
+    const s = D.meta.strategies[id];
+    document.getElementById("title").textContent = s.label;
+    document.getElementById("desc").textContent = s.desc + (s.note ? " " + s.note : "");
+    const all = tradesOf(id);
+    document.getElementById("kpis").innerHTML = kpiHtml(s, all);
+    applyFilter();
+  }
+
+  function renderList(q) {
+    const box = document.getElementById("slist");
+    const qq = (q || "").trim().toLowerCase();
+    const groups = {};
+    D.meta.strategies.forEach((s) => {
+      if (qq && !s.label.toLowerCase().includes(qq) && !s.key.toLowerCase().includes(qq)) return;
+      (groups[s.group] ||= []).push(s);
+    });
+    box.innerHTML = "";
+    Object.keys(groups).forEach((g) => {
+      const h = document.createElement("div");
+      h.className = "ghead";
+      h.textContent = g;
+      box.appendChild(h);
+      groups[g].forEach((s) => {
+        const b = document.createElement("button");
+        b.type = "button";
+        b.className = "si" + (s.id === sid ? " on" : "");
+        b.dataset.id = s.id;
+        const wr = pct(s.win_rate);
+        b.innerHTML = `<div class="n">${s.label}</div><div class="m"><span>${s.n || 0} 笔 · ${wr}</span><span class="st ${s.status||""}">${s.status||""}</span></div>`;
+        b.addEventListener("click", () => select(s.id));
+        box.appendChild(b);
+      });
+    });
+  }
+
+  function current() { return list[idx]; }
+
+  function renderTrade() {
+    const t = current();
+    const pos = document.getElementById("pos");
+    const tags = document.getElementById("tags");
+    const info = document.getElementById("info");
+    document.getElementById("prev").disabled = idx <= 0;
+    document.getElementById("next").disabled = idx >= list.length - 1 || !list.length;
+    if (!t) {
+      pos.textContent = list.length ? "" : "没有符合筛选的交易";
+      tags.innerHTML = "";
+      info.textContent = "";
+      drawK(null);
+      return;
+    }
+    pos.textContent = `${idx + 1} / ${list.length}`;
+    const resLab = t.result === 1 ? "赢" : t.result === -1 ? "输" : "平";
+    const resCls = t.result === 1 ? "W" : t.result === -1 ? "L" : "T";
+    const sam = (t.flags & 4) ? "近端确认" : (t.flags & 1) ? "样本外" : "样本内";
+    tags.innerHTML = `<span class="tag ${t.dir===1?"long":"short"}">${t.dir===1?"做多":"做空"}</span> <span class="tag ${resCls}">${resLab}</span> <span class="tag">${sam}</span>`;
+    const ev = t.result === 1 ? "+0.8" : t.result === -1 ? "−1.0" : "0";
+    info.textContent = `${shanghai(t.tsec)}  ·  入场 ${t.entry.toFixed(2)}  →  结算 ${t.exit.toFixed(2)}  ·  ${ev}R`;
+    drawK(t);
+  }
+
+  function fitCanvas(c) {
+    const r = c.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.floor(r.width * dpr));
+    const h = Math.max(1, Math.floor(r.height * dpr));
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    return { ctx: c.getContext("2d"), w, h, dpr };
+  }
+
+  function drawEquity() {
+    const { ctx, w, h, dpr } = fitCanvas(document.getElementById("eq"));
+    ctx.clearRect(0, 0, w, h);
+    if (!list.length) return;
+    const padL = 48 * dpr, padR = 12 * dpr, padT = 28 * dpr, padB = 22 * dpr;
+    let eq = 0, min = 0, max = 0;
+    const pts = [0];
+    for (const t of list) {
+      eq += t.result === 1 ? 0.8 : t.result === -1 ? -1 : 0;
+      pts.push(eq);
+      if (eq < min) min = eq;
+      if (eq > max) max = eq;
+    }
+    if (min === max) { max = min + 1; min -= 1; }
+    const xs = w - padL - padR, ys = h - padT - padB;
+    const x = (i) => padL + xs * (i / (pts.length - 1 || 1));
+    const y = (v) => padT + ys * (1 - (v - min) / (max - min));
+    ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(padL, y(0)); ctx.lineTo(w - padR, y(0)); ctx.stroke();
+    ctx.fillStyle = css("--dim"); ctx.font = `${11 * dpr}px sans-serif`;
+    ctx.fillText(max.toFixed(1), 6 * dpr, padT + 4 * dpr);
+    ctx.fillText(min.toFixed(1), 6 * dpr, h - padB);
+    ctx.beginPath();
+    pts.forEach((v, i) => { if (i === 0) ctx.moveTo(x(i), y(v)); else ctx.lineTo(x(i), y(v)); });
+    ctx.strokeStyle = eq >= 0 ? css("--accent") : css("--fail");
+    ctx.lineWidth = 1.5 * dpr;
+    ctx.stroke();
+    if (list.length) {
+      const cx = x(idx + 1);
+      ctx.strokeStyle = css("--text");
+      ctx.setLineDash([4 * dpr, 4 * dpr]);
+      ctx.beginPath(); ctx.moveTo(cx, padT); ctx.lineTo(cx, h - padB); ctx.stroke();
+      ctx.setLineDash([]);
+    }
+  }
+
+  function drawK(t) {
+    const { ctx, w, h, dpr } = fitCanvas(document.getElementById("k"));
+    ctx.clearRect(0, 0, w, h);
+    if (!t || t.kidx === 0xFFFFFFFF) {
+      ctx.fillStyle = css("--muted");
+      ctx.font = `${13 * dpr}px sans-serif`;
+      ctx.fillText("这笔没有对上 5 分钟 K 线，只显示记录。", 20 * dpr, 40 * dpr);
+      return;
+    }
+    const padL = 64 * dpr, padR = 16 * dpr, padT = 28 * dpr, padB = 28 * dpr;
+    const around = 36;
+    let i0 = Math.max(0, t.kidx - around);
+    let i1 = Math.min(D.nbar - 1, t.kidx + 8);
+    const n = i1 - i0 + 1;
+    let lo = Infinity, hi = -Infinity;
+    for (let i = i0; i <= i1; i++) {
+      if (D.low[i] < lo) lo = D.low[i];
+      if (D.high[i] > hi) hi = D.high[i];
+    }
+    const mid = (hi + lo) / 2, pad = Math.max((hi - lo) * 0.08, mid * 0.0004);
+    lo -= pad; hi += pad;
+    const xs = w - padL - padR, ys = h - padT - padB;
+    const cw = xs / n;
+    const x = (i) => padL + (i - i0 + 0.5) * cw;
+    const y = (p) => padT + ys * (1 - (p - lo) / (hi - lo));
+    // grid
+    ctx.strokeStyle = css("--line"); ctx.lineWidth = 1;
+    ctx.fillStyle = css("--dim"); ctx.font = `${10 * dpr}px sans-serif`;
+    for (let g = 0; g < 5; g++) {
+      const p = lo + (hi - lo) * g / 4;
+      const yy = y(p);
+      ctx.beginPath(); ctx.moveTo(padL, yy); ctx.lineTo(w - padR, yy); ctx.stroke();
+      ctx.fillText(p.toFixed(1), 6 * dpr, yy + 3 * dpr);
+    }
+    // highlight 10m hold
+    const xEntry = x(t.kidx);
+    const xExit = t.kidx + 2 <= i1 ? x(t.kidx + 2) : x(i1);
+    ctx.fillStyle = "rgba(91,159,214,0.08)";
+    ctx.fillRect(xEntry, padT, xExit - xEntry, ys);
+    // candles
+    for (let i = i0; i <= i1; i++) {
+      const up = D.close[i] >= D.open[i];
+      ctx.strokeStyle = ctx.fillStyle = up ? css("--up") : css("--down");
+      const xc = x(i);
+      const bodyW = Math.max(1, cw * 0.62);
+      ctx.beginPath();
+      ctx.moveTo(xc, y(D.high[i]));
+      ctx.lineTo(xc, y(D.low[i]));
+      ctx.lineWidth = Math.max(1, dpr);
+      ctx.stroke();
+      const y1 = y(D.open[i]), y2 = y(D.close[i]);
+      const top = Math.min(y1, y2), bh = Math.max(1, Math.abs(y2 - y1));
+      ctx.fillRect(xc - bodyW / 2, top, bodyW, bh);
+    }
+    // EMA50
+    ctx.beginPath();
+    let started = false;
+    for (let i = i0; i <= i1; i++) {
+      const yy = y(D.ema[i]);
+      if (!started) { ctx.moveTo(x(i), yy); started = true; }
+      else ctx.lineTo(x(i), yy);
+    }
+    ctx.strokeStyle = css("--ema");
+    ctx.lineWidth = 1.2 * dpr;
+    ctx.stroke();
+    // entry / exit
+    ctx.setLineDash([4 * dpr, 3 * dpr]);
+    ctx.strokeStyle = css("--entry");
+    ctx.beginPath(); ctx.moveTo(xEntry, padT); ctx.lineTo(xEntry, padT + ys); ctx.stroke();
+    ctx.strokeStyle = css("--exitm");
+    if (t.kidx + 2 <= i1) {
+      ctx.beginPath(); ctx.moveTo(x(t.kidx + 2), padT); ctx.lineTo(x(t.kidx + 2), padT + ys); ctx.stroke();
+    }
+    ctx.setLineDash([]);
+    // markers
+    ctx.fillStyle = css("--entry");
+    const ye = y(t.entry);
+    ctx.beginPath();
+    if (t.dir === 1) { ctx.moveTo(xEntry, ye - 8*dpr); ctx.lineTo(xEntry - 6*dpr, ye + 4*dpr); ctx.lineTo(xEntry + 6*dpr, ye + 4*dpr); }
+    else { ctx.moveTo(xEntry, ye + 8*dpr); ctx.lineTo(xEntry - 6*dpr, ye - 4*dpr); ctx.lineTo(xEntry + 6*dpr, ye - 4*dpr); }
+    ctx.fill();
+    // x labels
+    ctx.fillStyle = css("--dim");
+    const step = Math.max(1, Math.floor(n / 6));
+    for (let i = i0; i <= i1; i += step) {
+      ctx.fillText(shanghai(D.times[i]).slice(5), x(i) - 20 * dpr, h - 8 * dpr);
+    }
+  }
+
+  function step(d) {
+    if (!list.length) return;
+    idx = Math.max(0, Math.min(list.length - 1, idx + d));
+    renderTrade();
+    drawEquity();
+  }
+  function playToggle() {
+    const btn = document.getElementById("play");
+    if (timer) { clearInterval(timer); timer = null; btn.textContent = "播放"; return; }
+    btn.textContent = "暂停";
+    const tick = () => {
+      if (idx >= list.length - 1) { playToggle(); return; }
+      step(1);
+    };
+    timer = setInterval(tick, +document.getElementById("speed").value);
+  }
+
+  load().then((data) => {
+    D = data;
+    boot.hidden = true;
+    document.getElementById("app").classList.add("on");
+    renderList("");
+    const first = D.meta.strategies.find((s) => (s.n || 0) > 0);
+    if (first) select(first.id);
+    document.getElementById("filter").addEventListener("input", (e) => renderList(e.target.value));
+    document.getElementById("prev").addEventListener("click", () => step(-1));
+    document.getElementById("next").addEventListener("click", () => step(1));
+    document.getElementById("play").addEventListener("click", playToggle);
+    ["fdir","fres","fsam","nonov"].forEach((id) => {
+      document.getElementById(id).addEventListener("change", () => { if (timer) playToggle(); idx = 0; applyFilter(); });
+    });
+    window.addEventListener("resize", () => { drawEquity(); drawK(current()); });
+    window.addEventListener("keydown", (e) => {
+      if (["INPUT","SELECT","TEXTAREA"].includes(document.activeElement.tagName)) return;
+      if (e.key === "ArrowLeft") { e.preventDefault(); step(-1); }
+      if (e.key === "ArrowRight") { e.preventDefault(); step(1); }
+      if (e.key === " ") { e.preventDefault(); playToggle(); }
+    });
+  }).catch((e) => fail(e.message || String(e)));
+})();
+</script>
+</body>
+</html>
